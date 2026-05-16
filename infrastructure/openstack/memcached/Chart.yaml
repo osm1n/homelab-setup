@@ -1,0 +1,10 @@
+apiVersion: v2
+name: openstack-memcached
+description: Memcached caching for OpenStack services
+type: application
+version: 1.0.0
+appVersion: "1.6.40"
+dependencies:
+  - name: memcached
+    version: 8.2.3
+    repository: https://charts.bitnami.com/bitnami

@@ -1,0 +1,10 @@
+apiVersion: v2
+name: openstack-glance
+description: OpenStack Glance Image Service
+type: application
+version: 1.0.0
+appVersion: "2025.1"
+dependencies:
+  - name: glance
+    version: 2025.2.8+aed8f5826
+    repository: https://tarballs.opendev.org/openstack/openstack-helm/

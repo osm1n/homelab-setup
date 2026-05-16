@@ -1,0 +1,287 @@
+neutron:
+  # Disable Helm hooks - Jobs run as regular resources for ArgoCD compatibility
+  helm3_hook: false
+
+  # Node selectors - network agents only on labeled Ubuntu nodes with OVS
+  labels:
+    agent:
+      dhcp:
+        node_selector_key: openvswitch
+        node_selector_value: enabled
+      l3:
+        node_selector_key: openvswitch
+        node_selector_value: enabled
+      metadata:
+        node_selector_key: openvswitch
+        node_selector_value: enabled
+      ovs:
+        node_selector_key: openvswitch
+        node_selector_value: enabled
+    job:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+    server:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+    rpc_server:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+    test:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+
+  # Explicit config overrides
+  conf:
+    neutron:
+      DEFAULT:
+        core_plugin: ml2
+        service_plugins: router
+        l3_ha: false
+        max_l3_agents_per_router: 1
+      nova:
+        auth_type: password
+        auth_url: http://keystone-api.openstack.svc.cluster.local:5000/v3
+        auth_version: v3
+        region_name: RegionOne
+        project_name: service
+        project_domain_name: service
+        user_domain_name: service
+        username: nova
+        password: <your-nova-keystone-password>
+        valid_interfaces: internal
+    # ML2 plugin configuration
+    plugins:
+      ml2_conf:
+        ml2:
+          type_drivers: flat,vlan,vxlan
+          tenant_network_types: vxlan
+          mechanism_drivers: openvswitch,l2population
+          extension_drivers: port_security
+        ml2_type_flat:
+          flat_networks: provider
+        ml2_type_vlan:
+          network_vlan_ranges: provider:1:4094
+        ml2_type_vxlan:
+          vni_ranges: 1:65535
+      openvswitch_agent:
+        agent:
+          tunnel_types: vxlan
+          l2_population: true
+          arp_responder: true
+          vxlan_udp_port: 4790
+        ovs:
+          bridge_mappings: provider:br-ex
+          integration_bridge: br-int
+          tunnel_bridge: br-tun
+        securitygroup:
+          firewall_driver: openvswitch
+    # DHCP agent
+    dhcp_agent:
+      DEFAULT:
+        interface_driver: openvswitch
+        enable_isolated_metadata: true
+    # L3 agent
+    l3_agent:
+      DEFAULT:
+        interface_driver: openvswitch
+        external_network_bridge: ""
+    # Metadata agent
+    metadata_agent:
+      DEFAULT:
+        nova_metadata_host: nova-metadata.openstack.svc.cluster.local
+        metadata_proxy_shared_secret: <your-metadata-shared-secret>
+
+  # Endpoints configuration
+  endpoints:
+    identity:
+      auth:
+        admin:
+          region_name: RegionOne
+          username: admin
+          password: <your-openstack-admin-password>
+          project_name: admin
+          user_domain_name: default
+          project_domain_name: default
+        neutron:
+          role: admin,service
+          region_name: RegionOne
+          username: neutron
+          password: <your-neutron-keystone-password>
+          project_name: service
+          user_domain_name: service
+          project_domain_name: service
+        nova:
+          role: admin,service
+          region_name: RegionOne
+          username: nova
+          password: <your-nova-keystone-password>
+          project_name: service
+          user_domain_name: service
+          project_domain_name: service
+      hosts:
+        default: keystone
+        internal: keystone-api
+      host_fqdn_override:
+        default: null
+      path:
+        default: /v3
+      scheme:
+        default: http
+      port:
+        api:
+          default: 80
+          internal: 5000
+    network:
+      hosts:
+        default: neutron
+        internal: neutron-server
+      host_fqdn_override:
+        default: null
+      path:
+        default: null
+      scheme:
+        default: http
+      port:
+        api:
+          default: 9696
+          internal: 9696
+    compute:
+      hosts:
+        default: nova
+        internal: nova-api
+      host_fqdn_override:
+        default: null
+      path:
+        default: /v2.1
+      scheme:
+        default: http
+      port:
+        api:
+          default: 8774
+          internal: 8774
+    oslo_db:
+      auth:
+        admin:
+          username: root
+          password: <your-mariadb-root-password>
+        neutron:
+          username: neutron
+          password: <your-neutron-db-password>
+      hosts:
+        default: openstack-mariadb
+      path: /neutron
+      scheme: mysql+pymysql
+      port:
+        mysql:
+          default: 3306
+    oslo_cache:
+      hosts:
+        default: openstack-memcached
+      port:
+        memcache:
+          default: 11211
+    oslo_messaging:
+      auth:
+        admin:
+          username: openstack
+          password: <your-rabbitmq-password>
+        neutron:
+          username: openstack
+          password: <your-rabbitmq-password>
+      hosts:
+        default: openstack-rabbitmq
+      host_fqdn_override:
+        default: openstack-rabbitmq.openstack.svc.cluster.local
+      port:
+        amqp:
+          default: 5672
+      statefulset: null
+
+  # Ingress configuration - use nginx ingress class
+  network:
+    server:
+      ingress:
+        public: true
+        classes:
+          namespace: "nginx"
+          cluster: "nginx"
+
+  # Pod configuration
+  pod:
+    replicas:
+      server: 1
+      rpc_server: 1
+    probes:
+      neutron:
+        ovs_agent:
+          ovs_agent:
+            readiness:
+              enabled: false
+    resources:
+      server:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "512Mi"
+
+  # Override dependencies to remove rabbit-init
+  dependencies:
+    static:
+      server:
+        jobs:
+          - neutron-db-sync
+          - neutron-ks-user
+          - neutron-ks-endpoints
+        services:
+          - endpoint: internal
+            service: oslo_db
+          - endpoint: internal
+            service: identity
+      rpc_server:
+        jobs:
+          - neutron-db-sync
+        services:
+          - endpoint: internal
+            service: oslo_db
+          - endpoint: internal
+            service: oslo_messaging
+      dhcp:
+        jobs:
+          - neutron-db-sync
+        services:
+          - endpoint: internal
+            service: oslo_messaging
+      l3:
+        jobs:
+          - neutron-db-sync
+        services:
+          - endpoint: internal
+            service: oslo_messaging
+      metadata:
+        jobs:
+          - neutron-db-sync
+        services:
+          - endpoint: internal
+            service: oslo_messaging
+      ovs_agent:
+        jobs:
+          - neutron-db-sync
+        pod: null
+        services:
+          - endpoint: internal
+            service: network
+
+  # Disable unnecessary features
+  manifests:
+    pod_rally_test: false
+    job_image_repo_sync: false
+    job_rabbit_init: false
+    # Enable network agents on OVS-enabled nodes
+    daemonset_dhcp_agent: true
+    daemonset_l3_agent: true
+    daemonset_metadata_agent: true
+    daemonset_ovs_agent: true
+    daemonset_lb_agent: false
+    daemonset_sriov_agent: false
+    daemonset_netns_cleanup_cron: true

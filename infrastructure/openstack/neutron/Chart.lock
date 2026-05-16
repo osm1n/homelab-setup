@@ -1,0 +1,6 @@
+dependencies:
+- name: neutron
+  repository: https://tarballs.opendev.org/openstack/openstack-helm/
+  version: 2025.2.15+01c93d867
+digest: sha256:4684041e81375713dc634754269bd5facdde7b57080156fb0e78d1fa80c11493
+generated: "2026-02-13T21:48:00.176661+01:00"

@@ -1,0 +1,6 @@
+dependencies:
+- name: skyline
+  repository: https://tarballs.opendev.org/openstack/openstack-helm/
+  version: 2025.2.5+01c93d867
+digest: sha256:0b3844b103357c8f03864bcace23a3647468e9d0b8744a2e2a95ee3a98786476
+generated: "2026-02-14T10:43:33.686166+01:00"

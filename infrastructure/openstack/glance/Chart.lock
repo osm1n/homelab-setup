@@ -1,0 +1,6 @@
+dependencies:
+- name: glance
+  repository: https://tarballs.opendev.org/openstack/openstack-helm/
+  version: 2025.2.8+aed8f5826
+digest: sha256:79bfb37242ff429e7a17187244b8a5424b4565609f7f23959c7923485a50a532
+generated: "2026-02-13T02:01:29.511806+01:00"

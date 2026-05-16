@@ -1,0 +1,11 @@
+apiVersion: v2
+name: openstack-skyline
+description: OpenStack Skyline Dashboard
+type: application
+version: 0.1.0
+appVersion: "2025.1"
+
+dependencies:
+  - name: skyline
+    version: "2025.2.5+01c93d867"
+    repository: "https://tarballs.opendev.org/openstack/openstack-helm/"

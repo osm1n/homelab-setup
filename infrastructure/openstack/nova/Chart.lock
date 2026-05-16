@@ -1,0 +1,6 @@
+dependencies:
+- name: nova
+  repository: https://tarballs.opendev.org/openstack/openstack-helm/
+  version: 2025.2.7+069307487
+digest: sha256:6ada87992b5784aa577db013016f25f7d3f7fa1a58d4da53605c2e41fec8d904
+generated: "2026-02-13T07:59:48.533924+01:00"

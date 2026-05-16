@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Don't override namespace - operators define their own namespaces
+resources:
+  # KubeVirt Operator from upstream (creates kubevirt namespace)
+  - https://github.com/kubevirt/kubevirt/releases/download/v1.4.1/kubevirt-operator.yaml
+  # KubeVirt CR (our config)
+  - kubevirt-cr.yaml
+  # CDI Operator from upstream (creates cdi namespace)
+  - https://github.com/kubevirt/containerized-data-importer/releases/download/v1.60.3/cdi-operator.yaml
+  # CDI CR (our config)
+  - cdi-cr.yaml

@@ -1,0 +1,61 @@
+# Example: Cirros test VM
+# Apply with: kubectl apply -f cirros-vm.yaml
+# Access console: kubectl virt console cirros-test
+# SSH: kubectl virt ssh cirros-test (if SSH enabled)
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vms
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: cirros-dv
+  namespace: vms
+spec:
+  source:
+    http:
+      url: "https://download.cirros-cloud.net/0.6.2/cirros-0.6.2-x86_64-disk.img"
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: ceph-filesystem
+    volumeMode: Filesystem
+    resources:
+      requests:
+        storage: 1Gi
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: cirros-test
+  namespace: vms
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: cirros-test
+    spec:
+      domain:
+        cpu:
+          cores: 1
+        devices:
+          disks:
+            - name: rootdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+        resources:
+          requests:
+            memory: 128Mi
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: rootdisk
+          dataVolume:
+            name: cirros-dv

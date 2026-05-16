@@ -1,0 +1,216 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-kube-prometheus-stack
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 65.8.1
+    helm:
+      skipCrds: true
+      valuesObject:
+        crds:
+          enabled: false
+        grafana:
+          service:
+            type: LoadBalancer
+          defaultDashboardsTimezone: browser
+          additionalDataSources:
+            - name: Loki
+              type: loki
+              access: proxy
+              url: http://monitoring-loki-gateway.monitoring.svc.cluster.local
+              isDefault: false
+        kubeEtcd:
+          enabled: false
+        kubeControllerManager:
+          enabled: false
+        kubeScheduler:
+          enabled: false
+        kubeProxy:
+          enabled: false
+        defaultRules:
+          rules:
+            kubeProxy: false
+          disabled:
+            PrometheusDuplicateTimestamps: true
+        prometheus-node-exporter:
+          enabled: false
+        prometheusOperator:
+          admissionWebhooks:
+            enabled: false
+            patch:
+              enabled: false
+        alertmanager:
+          enabled: true
+          alertmanagerSpec:
+            useExistingSecret: alertmanager-main
+            configSecret: alertmanager-main
+        prometheus:
+          prometheusSpec:
+            retention: 10d
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: ceph-block
+                  accessModes:
+                    - ReadWriteOnce
+                  resources:
+                    requests:
+                      storage: 20Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - Replace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-loki
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: loki
+    targetRevision: 6.16.0
+    helm:
+      valuesObject:
+        deploymentMode: SingleBinary
+        loki:
+          auth_enabled: false
+          commonConfig:
+            replication_factor: 1
+          schemaConfig:
+            configs:
+              - from: "2024-01-01"
+                store: tsdb
+                object_store: filesystem
+                schema: v13
+                index:
+                  prefix: loki_index_
+                  period: 24h
+          storage:
+            type: filesystem
+            bucketNames:
+              chunks: chunks
+              ruler: ruler
+              admin: admin
+        singleBinary:
+          replicas: 1
+        backend:
+          replicas: 0
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        chunksCache:
+          enabled: false
+        resultsCache:
+          enabled: false
+        test:
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-promtail
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: promtail
+    targetRevision: 6.16.6
+    helm:
+      valuesObject:
+        config:
+          clients:
+            - url: http://monitoring-loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push
+          snippets:
+            extraScrapeConfigs: |
+              - job_name: openstack-pods
+                pipeline_stages:
+                  - cri: {}
+                kubernetes_sd_configs:
+                  - role: pod
+                relabel_configs:
+                  - source_labels: [__meta_kubernetes_namespace]
+                    action: keep
+                    regex: openstack
+                  - action: replace
+                    source_labels: [__meta_kubernetes_pod_name]
+                    target_label: pod
+                  - action: replace
+                    source_labels: [__meta_kubernetes_pod_container_name]
+                    target_label: container
+                  - action: replace
+                    source_labels: [__meta_kubernetes_namespace]
+                    target_label: namespace
+                  - replacement: /var/log/pods/*$1/*.log
+                    separator: /
+                    source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
+                    target_label: __path__
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-rules
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "7"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/monitoring-rules
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

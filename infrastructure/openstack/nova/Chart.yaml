@@ -1,0 +1,11 @@
+apiVersion: v2
+name: openstack-nova
+description: OpenStack Nova Compute Service
+type: application
+version: 0.1.0
+appVersion: "2025.1"
+
+dependencies:
+  - name: nova
+    version: "2025.2.7+069307487"
+    repository: "https://tarballs.opendev.org/openstack/openstack-helm/"

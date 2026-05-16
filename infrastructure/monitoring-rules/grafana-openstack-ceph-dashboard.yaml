@@ -1,0 +1,198 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-openstack-ceph-overview
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  openstack-ceph-overview.json: |
+    {
+      "id": null,
+      "title": "OpenStack + Ceph Overview",
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 2,
+      "refresh": "30s",
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Nova Compute DS Unavailable",
+          "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+          "targets": [
+            {
+              "expr": "kube_daemonset_status_number_unavailable{namespace=\"openstack\",daemonset=\"nova-compute-default\"}",
+              "refId": "A"
+            }
+          ],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "stat",
+          "title": "Neutron OVS Agent DS Unavailable",
+          "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+          "targets": [
+            {
+              "expr": "kube_daemonset_status_number_unavailable{namespace=\"openstack\",daemonset=\"neutron-ovs-agent-default\"}",
+              "refId": "A"
+            }
+          ],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "stat",
+          "title": "OpenStack Pods Not Ready",
+          "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+          "targets": [
+            {
+              "expr": "sum(kube_pod_status_ready{namespace=\"openstack\",condition=\"false\"})",
+              "refId": "A"
+            }
+          ],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "stat",
+          "title": "Ceph Pods Not Ready",
+          "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+          "targets": [
+            {
+              "expr": "sum(kube_pod_status_ready{namespace=\"rook-ceph\",condition=\"false\"})",
+              "refId": "A"
+            }
+          ],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "stat",
+          "title": "Ceph Health (0=OK,1=WARN,2=ERR)",
+          "gridPos": {"h": 6, "w": 4, "x": 0, "y": 6},
+          "targets": [
+            {
+              "expr": "max(ceph_health_status)",
+              "refId": "A"
+            }
+          ],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "stat",
+          "title": "OSDs Up",
+          "gridPos": {"h": 6, "w": 4, "x": 4, "y": 6},
+          "targets": [
+            {
+              "expr": "sum(ceph_osd_up)",
+              "refId": "A"
+            }
+          ],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "stat",
+          "title": "OSDs In",
+          "gridPos": {"h": 6, "w": 4, "x": 8, "y": 6},
+          "targets": [
+            {
+              "expr": "sum(ceph_osd_in)",
+              "refId": "A"
+            }
+          ],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "stat",
+          "title": "OSD Total",
+          "gridPos": {"h": 6, "w": 4, "x": 12, "y": 6},
+          "targets": [
+            {
+              "expr": "count(ceph_osd_up)",
+              "refId": "A"
+            }
+          ],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "stat",
+          "title": "MONs In Quorum",
+          "gridPos": {"h": 6, "w": 4, "x": 16, "y": 6},
+          "targets": [
+            {
+              "expr": "sum(ceph_mon_quorum_status)",
+              "refId": "A"
+            }
+          ],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "stat",
+          "title": "MGR Active",
+          "gridPos": {"h": 6, "w": 4, "x": 20, "y": 6},
+          "targets": [
+            {
+              "expr": "max(ceph_mgr_status)",
+              "refId": "A"
+            }
+          ],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "timeseries",
+          "title": "Nova Compute Pod Restarts",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+          "targets": [
+            {
+              "expr": "sum by (pod) (kube_pod_container_status_restarts_total{namespace=\"openstack\",pod=~\"nova-compute-default.*\"})",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Neutron OVS Agent Pod Restarts",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+          "targets": [
+            {
+              "expr": "sum by (pod) (kube_pod_container_status_restarts_total{namespace=\"openstack\",pod=~\"neutron-ovs-agent-default.*\"})",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Ceph Health Trend",
+          "gridPos": {"h": 8, "w": 8, "x": 0, "y": 20},
+          "targets": [
+            {
+              "expr": "max(ceph_health_status)",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "OSD Up Trend",
+          "gridPos": {"h": 8, "w": 8, "x": 8, "y": 20},
+          "targets": [
+            {
+              "expr": "sum(ceph_osd_up)",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "MON Quorum Trend",
+          "gridPos": {"h": 8, "w": 8, "x": 16, "y": 20},
+          "targets": [
+            {
+              "expr": "sum(ceph_mon_quorum_status)",
+              "refId": "A"
+            }
+          ]
+        }
+      ],
+      "templating": {"list": []},
+      "annotations": {"list": []}
+    }

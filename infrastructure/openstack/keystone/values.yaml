@@ -1,0 +1,92 @@
+keystone:
+  # Disable Helm hooks - Jobs run as regular resources for ArgoCD compatibility
+  # ArgoCD converts post-install hooks to PostSync which creates a chicken-and-egg
+  # problem: API waits for Jobs, but Jobs only run after API is healthy
+  helm3_hook: false
+
+  # Use labels that exist on all nodes for homelab flexibility
+  labels:
+    api:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+    job:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+    test:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+
+  # Endpoints configuration
+  endpoints:
+    identity:
+      auth:
+        admin:
+          region_name: RegionOne
+          username: admin
+          password: <your-openstack-admin-password>
+          project_name: admin
+          user_domain_name: default
+          project_domain_name: default
+    oslo_db:
+      auth:
+        admin:
+          username: root
+          password: <your-mariadb-root-password>
+        keystone:
+          username: keystone
+          password: <your-keystone-db-password>
+      hosts:
+        default: openstack-mariadb
+      path: /keystone
+      scheme: mysql+pymysql
+      port:
+        mysql:
+          default: 3306
+    oslo_messaging:
+      auth:
+        admin:
+          username: openstack
+          password: <your-rabbitmq-password>
+        keystone:
+          username: openstack
+          password: <your-rabbitmq-password>
+      hosts:
+        default: openstack-rabbitmq
+      port:
+        amqp:
+          default: 5672
+      statefulset: null
+    oslo_cache:
+      hosts:
+        default: openstack-memcached
+      port:
+        memcache:
+          default: 11211
+
+  # Ingress configuration
+  network:
+    api:
+      ingress:
+        public: true
+        classes:
+          namespace: "nginx"
+          cluster: "nginx"
+        annotations:
+          nginx.ingress.kubernetes.io/rewrite-target: /
+
+  # Pod configuration
+  pod:
+    replicas:
+      api: 1
+    resources:
+      api:
+        requests:
+          memory: "256Mi"
+          cpu: "100m"
+        limits:
+          memory: "512Mi"
+
+  # Disable features not needed for homelab
+  manifests:
+    pod_rally_test: false
+    job_image_repo_sync: false

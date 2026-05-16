@@ -1,0 +1,11 @@
+apiVersion: v2
+name: openstack-neutron
+description: OpenStack Neutron Networking Service
+type: application
+version: 0.1.0
+appVersion: "2025.1"
+
+dependencies:
+  - name: neutron
+    version: "2025.2.15+01c93d867"
+    repository: "https://tarballs.opendev.org/openstack/openstack-helm/"

@@ -1,0 +1,21 @@
+# CDI Custom Resource - configures CDI installation
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: CDI
+metadata:
+  name: cdi
+  namespace: cdi
+spec:
+  config:
+    # Use Ceph block storage for scratch space during imports
+    scratchSpaceStorageClass: ceph-block
+    podResourceRequirements:
+      requests:
+        cpu: "100m"
+        memory: "60M"
+      limits:
+        cpu: "750m"
+        memory: "2Gi"
+    # Feature gates
+    featureGates:
+      - HonorWaitForFirstConsumer
+  imagePullPolicy: IfNotPresent

@@ -1,0 +1,53 @@
+libvirt:
+  # Disable Helm hooks for ArgoCD compatibility
+  helm3_hook: false
+
+  # Node selector - only deploy on compute nodes with libvirt label
+  labels:
+    agent:
+      libvirt:
+        node_selector_key: openstack-nova-compute
+        node_selector_value: enabled
+
+  # Libvirt configuration - connect to host libvirt
+  conf:
+    libvirt:
+      listen_tls: "0"
+      listen_tcp: "1"
+      listen_addr: "0.0.0.0"
+      auth_tcp: "none"
+      log_level: "3"
+      unix_sock_group: "libvirt"
+      unix_sock_ro_perms: "0777"
+      unix_sock_rw_perms: "0770"
+    qemu:
+      stdio_handler: "file"
+      user: "root"
+      group: "root"
+      cgroup_controllers: []
+      # Disable apparmor/selinux in QEMU
+      security_driver: "none"
+    ceph:
+      enabled: false
+
+  # Pod configuration
+  pod:
+    security_context:
+      libvirt:
+        pod:
+          runAsUser: 0
+        container:
+          libvirt:
+            privileged: true
+            runAsUser: 0
+    resources:
+      libvirt:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "1024Mi"
+
+  # Manifests - disable containerized libvirt, use host libvirt instead
+  manifests:
+    daemonset_libvirt: false

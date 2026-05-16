@@ -1,0 +1,6 @@
+dependencies:
+- name: libvirt
+  repository: https://tarballs.opendev.org/openstack/openstack-helm-infra/
+  version: 2024.2.92+628a320c
+digest: sha256:2e9bfec1b36639ddb28b927d1c32fcce578410962f71683e9a9e173e157c2b9f
+generated: "2026-02-14T18:00:39.33955+01:00"

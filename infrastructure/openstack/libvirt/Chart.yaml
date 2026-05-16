@@ -1,0 +1,11 @@
+apiVersion: v2
+name: openstack-libvirt
+description: OpenStack Libvirt for Nova Compute
+type: application
+version: 0.1.0
+appVersion: "2025.1"
+
+dependencies:
+  - name: libvirt
+    version: "2024.2.92+b2e6f27a"
+    repository: "https://tarballs.opendev.org/openstack/openstack-helm-infra/"

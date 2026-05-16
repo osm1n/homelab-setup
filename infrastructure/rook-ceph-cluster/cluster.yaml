@@ -1,0 +1,137 @@
+apiVersion: ceph.rook.io/v1
+kind: CephCluster
+metadata:
+  name: rook-ceph
+  namespace: rook-ceph
+spec:
+  cephVersion:
+    image: quay.io/ceph/ceph:v19.2.0
+    allowUnsupported: false
+  dataDirHostPath: /var/lib/rook
+  skipUpgradeChecks: false
+  continueUpgradeAfterChecksEvenIfNotHealthy: false
+
+  mon:
+    count: 3
+    allowMultiplePerNode: false
+
+  mgr:
+    count: 2
+    allowMultiplePerNode: false
+    modules:
+      - name: dashboard
+        enabled: true
+      - name: prometheus
+        enabled: true
+
+  dashboard:
+    enabled: true
+    ssl: true
+
+  monitoring:
+    enabled: false  # Enable later with Prometheus
+
+  network:
+    connections:
+      encryption:
+        enabled: false
+      compression:
+        enabled: false
+
+  crashCollector:
+    disable: false
+
+  cleanupPolicy:
+    confirmation: ""
+    sanitizeDisks:
+      method: quick
+      dataSource: zero
+      iteration: 1
+    allowUninstallWithVolumes: false
+
+  placement:
+    all:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+    mon:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: Exists
+            - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - lenovo-worker
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+    mgr:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: Exists
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+    osd:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+
+  resources:
+    mon:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        memory: "2Gi"
+    mgr:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        memory: "1Gi"
+    osd:
+      requests:
+        cpu: "500m"
+        memory: "2Gi"
+      limits:
+        memory: "4Gi"
+
+  storage:
+    useAllNodes: false
+    useAllDevices: false
+    nodes:
+      # hpg9-cp1 was repurposed to Ubuntu compute and removed from Ceph OSD set
+      - name: lenovo-worker
+        devices:
+          - name: nvme0n1
+      - name: hpg5-worker
+        devices:
+          - name: nvme1n1
+      - name: hpg9-compute
+        devices:
+          - name: sda    # 465.8G Crucial MX500 SSD
+      - name: hpg9-compute-2
+        devices:
+          - name: sda    # 476.9G SPCC Solid SSD
+      - name: hpg9-compute3
+        devices:
+          - name: nvme1n1  # 238.5G KIOXIA KXG60 NVMe (secondary M.2)
+          - name: sda      # 238.5G SanDisk SD7TB3Q SATA (ex-dell3000-cp)
+
+  priorityClassNames:
+    mon: system-node-critical
+    osd: system-node-critical
+    mgr: system-cluster-critical
+
+  disruptionManagement:
+    managePodBudgets: true
+    osdMaintenanceTimeout: 30
+    pgHealthCheckTimeout: 0

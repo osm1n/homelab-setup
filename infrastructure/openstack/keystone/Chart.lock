@@ -1,0 +1,6 @@
+dependencies:
+- name: keystone
+  repository: https://tarballs.opendev.org/openstack/openstack-helm/
+  version: 2025.2.7+01c93d867
+digest: sha256:1b3f48ecfece80d73128fd912ad1f7ea5c63c90f95cc131dcdf9ea35431b582b
+generated: "2026-02-12T22:12:40.588075+01:00"

@@ -1,0 +1,260 @@
+cinder:
+  # Disable Helm hooks - Jobs run as regular resources for ArgoCD compatibility
+  helm3_hook: false
+
+  # Use labels that exist on all nodes for homelab flexibility
+  labels:
+    api:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+    backup:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+    job:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+    scheduler:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+    volume:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+    test:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+
+  # Explicit config overrides for cinder.conf
+  conf:
+    cinder:
+      DEFAULT:
+        enabled_backends: ceph
+        default_volume_type: ceph
+      # Ceph RBD backend configuration
+      ceph:
+        volume_driver: cinder.volume.drivers.rbd.RBDDriver
+        volume_backend_name: ceph
+        rbd_pool: volumes
+        rbd_ceph_conf: /etc/ceph/ceph.conf
+        rbd_flatten_volume_from_snapshot: false
+        rbd_max_clone_depth: 5
+        rbd_store_chunk_size: 4
+        rados_connect_timeout: -1
+        rbd_user: cinder
+        rbd_secret_uuid: 457eb676-33da-42ec-9a8c-9293d545c338
+      keystone_authtoken:
+        auth_type: password
+        auth_url: http://keystone-api.openstack.svc.cluster.local:5000/v3
+        auth_version: v3
+        region_name: RegionOne
+        project_name: service
+        project_domain_name: service
+        user_domain_name: service
+        username: cinder
+        password: <your-cinder-keystone-password>
+        memcache_servers: openstack-memcached.openstack.svc.cluster.local:11211
+
+  # Endpoints configuration
+  endpoints:
+    identity:
+      auth:
+        admin:
+          region_name: RegionOne
+          username: admin
+          password: <your-openstack-admin-password>
+          project_name: admin
+          user_domain_name: default
+          project_domain_name: default
+        cinder:
+          role: admin,service
+          region_name: RegionOne
+          username: cinder
+          password: <your-cinder-keystone-password>
+          project_name: service
+          user_domain_name: service
+          project_domain_name: service
+      hosts:
+        default: keystone
+        internal: keystone-api
+      host_fqdn_override:
+        default: null
+      path:
+        default: /v3
+      scheme:
+        default: http
+      port:
+        api:
+          default: 80
+          internal: 5000
+    volumev3:
+      hosts:
+        default: cinder
+        internal: cinder-api
+      host_fqdn_override:
+        default: null
+      path:
+        default: /v3
+      scheme:
+        default: http
+      port:
+        api:
+          default: 8776
+          internal: 8776
+    image:
+      hosts:
+        default: glance
+        internal: glance-api
+      host_fqdn_override:
+        default: null
+      path:
+        default: /v2
+      scheme:
+        default: http
+      port:
+        api:
+          default: 9292
+          internal: 9292
+    oslo_db:
+      auth:
+        admin:
+          username: root
+          password: <your-mariadb-root-password>
+        cinder:
+          username: cinder
+          password: <your-cinder-db-password>
+      hosts:
+        default: openstack-mariadb
+      path: /cinder
+      scheme: mysql+pymysql
+      port:
+        mysql:
+          default: 3306
+    oslo_cache:
+      hosts:
+        default: openstack-memcached
+      port:
+        memcache:
+          default: 11211
+    oslo_messaging:
+      auth:
+        admin:
+          username: openstack
+          password: <your-rabbitmq-password>
+        cinder:
+          username: openstack
+          password: <your-rabbitmq-password>
+      hosts:
+        default: openstack-rabbitmq
+      host_fqdn_override:
+        default: openstack-rabbitmq.openstack.svc.cluster.local
+      port:
+        amqp:
+          default: 5672
+      statefulset: null
+
+  # Ingress configuration - use nginx ingress class
+  network:
+    api:
+      ingress:
+        public: true
+        classes:
+          namespace: "nginx"
+          cluster: "nginx"
+
+  # Pod configuration
+  pod:
+    replicas:
+      api: 1
+      scheduler: 1
+      volume: 1
+      backup: 1
+    resources:
+      api:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "512Mi"
+      scheduler:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "256Mi"
+      volume:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "512Mi"
+
+  # Override dependencies to remove rabbit-init
+  dependencies:
+    static:
+      api:
+        jobs:
+          - cinder-db-sync
+          - cinder-ks-user
+          - cinder-ks-endpoints
+        services:
+          - endpoint: internal
+            service: oslo_db
+          - endpoint: internal
+            service: identity
+      scheduler:
+        jobs:
+          - cinder-db-sync
+        services:
+          - endpoint: internal
+            service: oslo_db
+          - endpoint: internal
+            service: oslo_messaging
+      volume:
+        jobs:
+          - cinder-db-sync
+        services:
+          - endpoint: internal
+            service: oslo_db
+          - endpoint: internal
+            service: oslo_messaging
+      backup:
+        jobs:
+          - cinder-db-sync
+        services:
+          - endpoint: internal
+            service: oslo_db
+          - endpoint: internal
+            service: oslo_messaging
+      volume_usage_audit:
+        jobs:
+          - cinder-db-sync
+          - cinder-ks-user
+          - cinder-ks-endpoints
+        services:
+          - endpoint: internal
+            service: identity
+          - endpoint: internal
+            service: volume
+
+  # Ceph secrets configuration
+  secrets:
+    rbd:
+      volume: cinder-volume-rbd-keyring
+      backup: cinder-volume-rbd-keyring
+
+  # Storage backend configuration
+  storage: rbd
+
+  # Ceph configuration
+  ceph_client:
+    configmap: ceph-etc
+    user_secret_name: cinder-volume-rbd-keyring
+
+  # Disable features not needed for homelab
+  manifests:
+    pod_rally_test: false
+    job_image_repo_sync: false
+    job_rabbit_init: false
+    # Disable storage-init - requires admin Ceph credentials, not needed for basic operation
+    job_storage_init: false
+    deployment_backup: false
+    deployment_volume: true

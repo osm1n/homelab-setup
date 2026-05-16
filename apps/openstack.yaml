@@ -1,0 +1,341 @@
+# OpenStack Infrastructure and Services
+# Deployed via ArgoCD with sync waves for dependency ordering
+---
+# Wave 5: OpenStack Namespace Config
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openstack-config
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/openstack
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openstack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+# Wave 5: MariaDB - Database backend for OpenStack services
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openstack-mariadb
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/openstack/mariadb
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openstack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Wave 5: RabbitMQ - Message queue for OpenStack services
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openstack-rabbitmq
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/openstack/rabbitmq
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openstack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Wave 5: Memcached - Caching for OpenStack services
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openstack-memcached
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/openstack/memcached
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openstack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Wave 6: Keystone - OpenStack Identity Service
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openstack-keystone
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/openstack/keystone
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openstack
+  # Ignore differences for secrets and jobs that are populated/managed externally
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: keystone-fernet-keys
+      jsonPointers:
+        - /data
+    - group: ""
+      kind: Secret
+      name: keystone-credential-keys
+      jsonPointers:
+        - /data
+    - group: batch
+      kind: Job
+      name: keystone-fernet-setup
+      jsonPointers:
+        - /spec/template/metadata/labels
+        - /metadata/labels
+    - group: batch
+      kind: Job
+      name: keystone-credential-setup
+      jsonPointers:
+        - /spec/template/metadata/labels
+        - /metadata/labels
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Wave 7: Glance - OpenStack Image Service
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openstack-glance
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "7"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/openstack/glance
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openstack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Wave 8: Placement - OpenStack Placement Service (Resource tracking)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openstack-placement
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/openstack/placement
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openstack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Wave 9: Libvirt - Hypervisor for Nova Compute
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openstack-libvirt
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "9"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/openstack/libvirt
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openstack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Wave 9: Open vSwitch - Network virtualization for Neutron
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openstack-openvswitch
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "9"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/openstack/openvswitch
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openstack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Wave 10: Nova - OpenStack Compute Service
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openstack-nova
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/openstack/nova
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openstack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Wave 10: Neutron - OpenStack Networking Service
+# Network agents enabled - runs on nodes labeled openvswitch=enabled
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openstack-neutron
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/openstack/neutron
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openstack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Wave 11: Cinder - OpenStack Block Storage Service
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openstack-cinder
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "11"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/openstack/cinder
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openstack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Wave 12: Skyline - OpenStack Dashboard
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openstack-skyline
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    targetRevision: main
+    path: infrastructure/openstack/skyline
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openstack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

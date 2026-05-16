@@ -1,0 +1,6 @@
+dependencies:
+- name: cinder
+  repository: https://tarballs.opendev.org/openstack/openstack-helm/
+  version: 2025.2.7+aed8f5826
+digest: sha256:a0587adeba96e04c6c5e7fa96b47ea4165aac74d551baa53115370f281873259
+generated: "2026-02-13T21:58:27.927028+01:00"

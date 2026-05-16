@@ -1,0 +1,43 @@
+rabbitmq:
+  # Authentication
+  authentication:
+    user:
+      value: openstack
+    password:
+      value: <your-rabbitmq-password>
+    erlangCookie:
+      value: <your-rabbitmq-erlang-cookie>
+
+  # Custom config to grant administrator tag to default user
+  # Required for OpenStack services to manage RabbitMQ vhosts/users
+  customConfig: |
+    default_user_tags.administrator = true
+
+  # Enable management plugin
+  plugins:
+    - rabbitmq_management
+    - rabbitmq_prometheus
+
+  # Storage
+  storage:
+    className: ceph-block
+    requestedSize: 10Gi
+
+  # Resources
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+
+  # Prevent fsGroup from overriding .erlang.cookie permissions to 660
+  # Erlang requires the cookie file to be 600 (owner-only)
+  podSecurityContext:
+    fsGroup: 999
+    fsGroupChangePolicy: OnRootMismatch
+    supplementalGroups:
+      - 999
+
+  # Single node for homelab
+  replicaCount: 1

@@ -1,0 +1,30 @@
+openvswitch:
+  # Disable Helm hooks - Jobs run as regular resources for ArgoCD compatibility
+  helm3_hook: false
+
+  # Node selectors - OVS only on labeled nodes
+  labels:
+    ovs:
+      node_selector_key: openvswitch
+      node_selector_value: enabled
+
+  # Pod configuration
+  pod:
+    resources:
+      ovs_db:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+      ovs_vswitchd:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "256Mi"
+
+  # Enable manifests
+  manifests:
+    daemonset: false
+    daemonset_ovs_vswitchd: false

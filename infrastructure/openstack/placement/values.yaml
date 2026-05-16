@@ -1,0 +1,115 @@
+placement:
+  # Disable Helm hooks - Jobs run as regular resources for ArgoCD compatibility
+  helm3_hook: false
+
+  # Configure public endpoint for version discovery
+  conf:
+    placement:
+      DEFAULT:
+        public_endpoint: http://placement-api.openstack.svc.cluster.local:8778/
+    wsgi_placement:
+      DEFAULT:
+        bind_host: 0.0.0.0
+        bind_port: 8778
+
+  # Use labels that exist on all nodes for homelab flexibility
+  labels:
+    api:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+    job:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+
+  # Endpoints configuration
+  endpoints:
+    identity:
+      auth:
+        admin:
+          region_name: RegionOne
+          username: admin
+          password: <your-openstack-admin-password>
+          project_name: admin
+          user_domain_name: default
+          project_domain_name: default
+        placement:
+          role: admin
+          region_name: RegionOne
+          username: placement
+          password: <your-placement-keystone-password>
+          project_name: service
+          user_domain_name: service
+          project_domain_name: service
+      hosts:
+        default: keystone
+        internal: keystone-api
+      host_fqdn_override:
+        default: null
+      path:
+        default: /v3
+      scheme:
+        default: http
+      port:
+        api:
+          default: 80
+          internal: 5000
+    placement:
+      hosts:
+        default: placement
+        internal: placement-api
+      host_fqdn_override:
+        default: null
+      path:
+        default: /
+      scheme:
+        default: http
+      port:
+        api:
+          default: 8778
+          internal: 8778
+    oslo_db:
+      auth:
+        admin:
+          username: root
+          password: <your-mariadb-root-password>
+        placement:
+          username: placement
+          password: <your-placement-db-password>
+      hosts:
+        default: openstack-mariadb
+      path: /placement
+      scheme: mysql+pymysql
+      port:
+        mysql:
+          default: 3306
+    oslo_cache:
+      hosts:
+        default: openstack-memcached
+      port:
+        memcache:
+          default: 11211
+
+  # Ingress configuration - use nginx ingress class
+  network:
+    api:
+      ingress:
+        public: true
+        classes:
+          namespace: "nginx"
+          cluster: "nginx"
+
+  # Pod configuration
+  pod:
+    replicas:
+      api: 1
+    resources:
+      api:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "256Mi"
+
+  # Disable features not needed for homelab
+  manifests:
+    pod_rally_test: false

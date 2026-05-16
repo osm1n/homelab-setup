@@ -1,0 +1,6 @@
+# talosconfig — NOT included in this public repo
+# Generate your own with:
+#   talosctl gen config <cluster-name> https://<VIP>:6443 \
+#     --with-secrets secrets.yaml \
+#     --output talosconfig \
+#     --output-types talosconfig

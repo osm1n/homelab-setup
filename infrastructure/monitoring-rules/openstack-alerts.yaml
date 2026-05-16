@@ -1,0 +1,56 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: openstack-platform-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring-kube-prometheus-stack
+spec:
+  groups:
+    - name: openstack-platform
+      rules:
+        - alert: OpenStackComputeDaemonSetUnavailable
+          expr: kube_daemonset_status_number_unavailable{namespace="openstack",daemonset="nova-compute-default"} > 0
+          for: 10m
+          labels:
+            severity: critical
+            service: nova
+          annotations:
+            summary: "nova-compute daemonset has unavailable pods"
+            description: "One or more nova-compute pods are unavailable for 10 minutes."
+        - alert: OpenStackNeutronOVSAgentUnavailable
+          expr: kube_daemonset_status_number_unavailable{namespace="openstack",daemonset="neutron-ovs-agent-default"} > 0
+          for: 10m
+          labels:
+            severity: critical
+            service: neutron
+          annotations:
+            summary: "neutron ovs-agent daemonset has unavailable pods"
+            description: "One or more neutron-ovs-agent pods are unavailable for 10 minutes."
+        - alert: OpenStackKeystoneApiUnavailable
+          expr: kube_deployment_status_replicas_unavailable{namespace="openstack",deployment="keystone-api"} > 0
+          for: 5m
+          labels:
+            severity: critical
+            service: keystone
+          annotations:
+            summary: "keystone-api has unavailable replicas"
+            description: "Keystone API deployment has unavailable replicas for 5 minutes."
+        - alert: OpenStackSkylineUnavailable
+          expr: kube_deployment_status_replicas_unavailable{namespace="openstack",deployment="skyline-api"} > 0
+          for: 5m
+          labels:
+            severity: warning
+            service: skyline
+          annotations:
+            summary: "skyline-api has unavailable replicas"
+            description: "Skyline deployment has unavailable replicas for 5 minutes."
+        - alert: CephClusterWarningOrError
+          expr: kube_pod_container_status_waiting_reason{namespace="rook-ceph",reason=~"CrashLoopBackOff|Error"} > 0
+          for: 10m
+          labels:
+            severity: warning
+            service: ceph
+          annotations:
+            summary: "Ceph pod has unhealthy container state"
+            description: "One or more Ceph containers are in CrashLoopBackOff or Error for 10 minutes."

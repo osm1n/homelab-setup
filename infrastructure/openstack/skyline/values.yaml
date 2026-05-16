@@ -1,0 +1,120 @@
+skyline:
+  # Disable Helm hooks for ArgoCD compatibility
+  helm3_hook: false
+
+  # Use labels that exist on all nodes
+  labels:
+    skyline:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+    job:
+      node_selector_key: kubernetes.io/os
+      node_selector_value: linux
+
+  # Skyline configuration
+  conf:
+    skyline:
+      default:
+        debug: false
+        log_dir: /var/log/skyline
+      openstack:
+        keystone_url: http://keystone-api.openstack.svc.cluster.local:5000/v3
+        system_user_password: <your-skyline-keystone-password>
+        system_user_name: skyline
+        system_user_domain: service
+        system_project: service
+        system_project_domain: service
+        default_region: RegionOne
+        interface_type: internal
+      # Database connection
+      database_url: mysql+pymysql://skyline:<your-skyline-db-password>@openstack-mariadb.openstack.svc.cluster.local:3306/skyline
+
+  # Endpoints configuration
+  endpoints:
+    identity:
+      auth:
+        admin:
+          region_name: RegionOne
+          username: admin
+          password: <your-openstack-admin-password>
+          project_name: admin
+          user_domain_name: default
+          project_domain_name: default
+        skyline:
+          role: admin
+          region_name: RegionOne
+          username: skyline
+          password: <your-skyline-keystone-password>
+          project_name: service
+          user_domain_name: service
+          project_domain_name: service
+      hosts:
+        default: keystone
+        internal: keystone-api
+      host_fqdn_override:
+        default: null
+      path:
+        default: /v3
+      scheme:
+        default: http
+      port:
+        api:
+          default: 80
+          internal: 5000
+    dashboard:
+      hosts:
+        default: skyline
+        internal: skyline-api
+      host_fqdn_override:
+        default: null
+      path:
+        default: /
+      scheme:
+        default: http
+      port:
+        api:
+          default: 9999
+          internal: 9999
+    oslo_db:
+      auth:
+        admin:
+          username: root
+          password: <your-mariadb-root-password>
+        skyline:
+          username: skyline
+          password: <your-skyline-db-password>
+      hosts:
+        default: openstack-mariadb
+      path: /skyline
+      scheme: mysql+pymysql
+      port:
+        mysql:
+          default: 3306
+
+  # Ingress configuration
+  network:
+    skyline:
+      ingress:
+        public: true
+        classes:
+          namespace: "nginx"
+          cluster: "nginx"
+        annotations:
+          nginx.ingress.kubernetes.io/proxy-body-size: "0"
+
+  # Pod configuration
+  pod:
+    replicas:
+      api: 1
+    resources:
+      api:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "512Mi"
+
+  # Disable unnecessary features
+  manifests:
+    pod_rally_test: false
+    job_image_repo_sync: false

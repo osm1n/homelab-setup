@@ -1,0 +1,74 @@
+# Example: Ubuntu 22.04 VM with cloud-init
+# Apply with: kubectl apply -f ubuntu-vm.yaml
+# Access console: kubectl virt console ubuntu-server
+# SSH: virtctl ssh ubuntu@ubuntu-server
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: ubuntu-dv
+  namespace: vms
+spec:
+  source:
+    http:
+      url: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: ceph-filesystem
+    volumeMode: Filesystem
+    resources:
+      requests:
+        storage: 10Gi
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-server
+  namespace: vms
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-server
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          disks:
+            - name: rootdisk
+              disk:
+                bus: virtio
+            - name: cloudinit
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+        resources:
+          requests:
+            memory: 2Gi
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: rootdisk
+          dataVolume:
+            name: ubuntu-dv
+        - name: cloudinit
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              hostname: ubuntu-server
+              user: ubuntu
+              password: ubuntu
+              chpasswd:
+                expire: false
+              ssh_pwauth: true
+              package_update: true
+              packages:
+                - qemu-guest-agent
+              runcmd:
+                - systemctl enable --now qemu-guest-agent

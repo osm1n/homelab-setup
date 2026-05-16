@@ -1,0 +1,10 @@
+apiVersion: v2
+name: openstack-mariadb
+description: MariaDB for OpenStack services
+type: application
+version: 1.0.0
+appVersion: "12.1.2"
+dependencies:
+  - name: mariadb
+    version: 24.1.1
+    repository: https://charts.bitnami.com/bitnami

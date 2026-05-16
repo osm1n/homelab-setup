@@ -1,0 +1,6 @@
+dependencies:
+- name: openvswitch
+  repository: https://tarballs.opendev.org/openstack/openstack-helm/
+  version: 2025.1.0+9be383505
+digest: sha256:0d466daf6b50ab4af0cbd9adc4ae51dccfd512f1d9032dfc200a6b58220f55b4
+generated: "2026-02-14T18:23:04.968534+01:00"

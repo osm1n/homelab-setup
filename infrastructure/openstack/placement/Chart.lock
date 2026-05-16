@@ -1,0 +1,6 @@
+dependencies:
+- name: placement
+  repository: https://tarballs.opendev.org/openstack/openstack-helm/
+  version: 2025.2.5+01c93d867
+digest: sha256:a606253e95e4c219880429c1353b8bed9c06ca3dba5f76eebda51a2f49290a11
+generated: "2026-02-13T07:51:15.070252+01:00"

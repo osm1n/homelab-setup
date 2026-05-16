@@ -1,0 +1,11 @@
+apiVersion: v2
+name: openstack-openvswitch
+description: Open vSwitch for OpenStack Neutron networking
+type: application
+version: 0.1.0
+appVersion: "2025.1"
+
+dependencies:
+  - name: openvswitch
+    version: "2025.1.0+9be383505"
+    repository: "https://tarballs.opendev.org/openstack/openstack-helm/"
