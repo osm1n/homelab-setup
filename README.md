@@ -237,7 +237,6 @@ Alertmanager is configured to push to Telegram — see `scripts/setup-alertmanag
 
 | File | What it covers |
 |------|---------------|
-| `docs/memory.md` | Complete operational context — architecture, node layout, networking, current cluster state, known issues |
 | `docs/error-fixes.md` | Incident log with root causes and exact fixes — the honest record of what went wrong |
 | `docs/compute-node-setup/` | Scripts 01–08 to go from a bare Ubuntu 22.04 install to a fully operational OpenStack compute node |
 | `docs/runbooks/monitoring-stack.md` | Monitoring stack operation and alert tuning |
