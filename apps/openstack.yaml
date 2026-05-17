@@ -14,7 +14,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/openstack
   destination:
@@ -40,7 +40,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/openstack/mariadb
   destination:
@@ -64,7 +64,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/openstack/rabbitmq
   destination:
@@ -88,7 +88,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/openstack/memcached
   destination:
@@ -112,7 +112,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/openstack/keystone
   destination:
@@ -160,7 +160,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/openstack/glance
   destination:
@@ -184,7 +184,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/openstack/placement
   destination:
@@ -208,7 +208,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/openstack/libvirt
   destination:
@@ -232,7 +232,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/openstack/openvswitch
   destination:
@@ -256,7 +256,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/openstack/nova
   destination:
@@ -281,7 +281,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/openstack/neutron
   destination:
@@ -305,7 +305,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/openstack/cinder
   destination:
@@ -329,7 +329,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/openstack/skyline
   destination:

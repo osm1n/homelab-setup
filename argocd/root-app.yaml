@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: apps
   destination:

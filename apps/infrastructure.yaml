@@ -35,7 +35,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/metallb-config
   destination:
@@ -58,7 +58,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/rook-ceph-operator
   destination:
@@ -106,7 +106,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/osm1n/openstack-homelab-gitops.git
+    repoURL: https://github.com/osm1n/homelab-setup
     targetRevision: main
     path: infrastructure/rook-ceph-cluster
   destination:
