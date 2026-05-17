@@ -6,7 +6,7 @@ metadata:
 data:
   ceph.conf: |
     [global]
-    mon_host = 10.110.72.200:6789,10.101.147.242:6789
+    mon_host = <your-ceph-mon-ip-1>:6789,<your-ceph-mon-ip-2>:6789
     auth_cluster_required = cephx
     auth_service_required = cephx
     auth_client_required = cephx
