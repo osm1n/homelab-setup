@@ -116,7 +116,6 @@ Prometheus + Loki + Promtail → Grafana → Alertmanager → Telegram
 │   └── kubevirt/
 │
 ├── docs/
-│   ├── memory.md                  # Full operational context — architecture, gotchas, status
 │   ├── error-fixes.md             # Incident log with root causes and fixes
 │   ├── instructions.md            # Setup walkthrough
 │   ├── compute-node-setup/        # Step-by-step scripts to provision Ubuntu compute nodes
@@ -221,7 +220,7 @@ The raw (non-base64) nova keyring also goes into `nova/values.yaml` at `conf.cep
    scripts/openstack-preflight.sh m1.medium
    ```
 
-See `docs/memory.md` for the full operational picture, and `docs/error-fixes.md` for a log of every incident and how it was resolved.
+See `docs/error-fixes.md` for a log of every incident and how it was resolved.
 
 ---
 
