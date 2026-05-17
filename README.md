@@ -117,7 +117,6 @@ Prometheus + Loki + Promtail → Grafana → Alertmanager → Telegram
 │
 ├── docs/
 │   ├── error-fixes.md             # Incident log with root causes and fixes
-│   ├── instructions.md            # Setup walkthrough
 │   ├── compute-node-setup/        # Step-by-step scripts to provision Ubuntu compute nodes
 │   └── runbooks/                  # Monitoring, VM provisioning, post-sync validation
 │
