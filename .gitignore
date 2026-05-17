@@ -1,1 +1,63 @@
+# Local state
 .state/
+
+# Talos secrets — never commit real ones
+secrets.yaml
+secrets.yml
+*.secret.yaml
+*.secret.yml
+talosconfig.real
+machine-config*.yaml
+
+# Real kubeconfig
+kubeconfig
+kubeconfig.yaml
+*.kubeconfig
+
+# Ceph keyrings and auth files
+*.keyring
+ceph.client.*.keyring
+ceph.conf.real
+
+# Credential overrides — local values files with real passwords
+*.local.yaml
+*.local.yml
+local-values.yaml
+local-values.yml
+override-values.yaml
+secrets-values.yaml
+
+# Environment files
+.env
+.env.*
+*.env
+
+# openrc / OpenStack credential files with real passwords
+openrc.sh
+*openrc*.sh
+clouds.yaml
+clouds.yml
+
+# SSH keys (if anyone ever puts one here)
+*.pem
+*.key
+id_rsa
+id_ed25519
+*.pub
+
+# OS / editor noise
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
