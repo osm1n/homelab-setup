@@ -58,7 +58,7 @@ Consult this document to get fully up to speed on the current state of the clust
 ## 2. Physical Network Topology
 
 ```
-Internet (Odido Fiber 2Gbps – 87.212.133.115)
+Internet (Odido Fiber 2Gbps)
     ↓
 ☁  Cloud Gateway Max (192.168.10.1)
     ↓ Port 1 (2.5 GbE)
